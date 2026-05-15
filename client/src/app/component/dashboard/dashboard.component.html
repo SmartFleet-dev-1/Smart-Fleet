@@ -1,1 +1,39 @@
-<!-- Add the required code here! -->
+<div class="dashboard-wrapper">
+  <div class="dashboard-card">
+    <h2>Dashboard</h2>
+    <p>Welcome to Smart Fleet Pro</p>
+
+    <div class="user-info">
+      <p><strong>Username:</strong> {{ username }}</p>
+      <p><strong>Role:</strong> {{ role }}</p>
+    </div>
+
+    <div class="quick-grid">
+      <div class="quick-card">
+        <h3>Vehicles</h3>
+        <p>Manage fleet vehicles</p>
+        <a routerLink="/vehicles">Open</a>
+      </div>
+
+      <div class="quick-card">
+        <h3>Drivers</h3>
+        <p>Manage driver records</p>
+        <a routerLink="/drivers">Open</a>
+      </div>
+
+      <div class="quick-card">
+        <h3>Maintenance</h3>
+        <p>Track service records</p>
+        <a routerLink="/maintenance">Open</a>
+      </div>
+
+      <div class="quick-card">
+        <h3>Insurance</h3>
+        <p>Manage insurance policies</p>
+        <a routerLink="/insurance">Open</a>
+      </div>
+    </div>
+
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</div>

@@ -1,1 +1,23 @@
-<!-- Add the required code here! -->
+<div class="app-container">
+  <header class="app-header">
+    <h1>Smart Fleet Pro</h1>
+    <p>Fleet and Maintenance Management System</p>
+
+    <nav class="nav-links">
+      <a routerLink="/login" routerLinkActive="active" *ngIf="!isLoggedIn()">Login</a>
+      <a routerLink="/register" routerLinkActive="active" *ngIf="!isLoggedIn()">Register</a>
+
+      <a routerLink="/dashboard" routerLinkActive="active" *ngIf="isLoggedIn()">Dashboard</a>
+      <a routerLink="/vehicles" routerLinkActive="active" *ngIf="isLoggedIn()">Vehicles</a>
+      <a routerLink="/drivers" routerLinkActive="active" *ngIf="isLoggedIn()">Drivers</a>
+      <a routerLink="/maintenance" routerLinkActive="active" *ngIf="isLoggedIn()">Maintenance</a>
+      <a routerLink="/insurance" routerLinkActive="active" *ngIf="isLoggedIn()">Insurance</a>
+
+      <button class="logout-btn" *ngIf="isLoggedIn()" (click)="logout()">Logout</button>
+    </nav>
+  </header>
+
+  <main class="page-wrapper">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from './services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,5 +9,17 @@ import { Router } from '@angular/router';
 })
 export class AppComponent {
 
-     //Add the required code here!
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }

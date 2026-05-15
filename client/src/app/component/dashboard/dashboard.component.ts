@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpService } from '../../../services/http.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,5 +9,21 @@ import { HttpService } from '../../../services/http.service';
 })
 export class DashboardComponent implements OnInit {
 
-     //Add the required code here!
+  username = '';
+  role = '';
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.username = this.authService.getUsername() || 'User';
+    this.role = this.authService.getRole() || 'N/A';
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }

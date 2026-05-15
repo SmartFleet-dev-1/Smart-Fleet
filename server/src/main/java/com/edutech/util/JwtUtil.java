@@ -1,5 +1,7 @@
 package com.edutech.util;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,14 +12,23 @@ import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "smartfleetpro_secret_key_2026";
+    /*
+     * For HS256, secret key should be at least 32 bytes.
+     * Do not use Base64 decoding here.
+     */
+    private final String SECRET_KEY = "smartfleetprosecretkey2026securejwtkey";
 
     private final long JWT_TOKEN_VALIDITY = 1000 * 60 * 60 * 10; // 10 hours
+
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -28,27 +39,33 @@ public class JwtUtil {
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
+
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
     private Boolean isTokenExpired(String token) {
+
         return extractExpiration(token).before(new Date());
     }
 
     public String generateToken(String username) {
+
         Map<String, Object> claims = new HashMap<>();
         return createToken(claims, username);
     }
 
     public String generateToken(UserDetails userDetails) {
+
         Map<String, Object> claims = new HashMap<>();
         return createToken(claims, userDetails.getUsername());
     }
@@ -59,8 +76,10 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY)
+                )
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 

@@ -4,7 +4,10 @@ import com.edutech.service.UserService;
 import com.edutech.util.JwtRequestFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.springframework.http.HttpMethod;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -18,8 +21,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import org.springframework.context.annotation.Bean;
 
 @Configuration
 @EnableWebSecurity
@@ -49,11 +50,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers(
-                        "/api/auth/register",
-                        "/api/auth/login"
-                ).permitAll()
+
+                // Allow CORS preflight requests
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // Public authentication APIs
+                .antMatchers("/api/auth/**").permitAll()
+
+                // Protected backend APIs
                 .antMatchers("/api/**").authenticated()
+
+                // Allow non-API resources if any
                 .anyRequest().permitAll()
                 .and()
                 .sessionManagement()
