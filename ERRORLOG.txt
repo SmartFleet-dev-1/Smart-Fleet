@@ -1,0 +1,627 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SMART FLEET PRO — PROJECT ERROR TRACKING LOG
+
+Purpose:
+This log tracks the major errors faced during Smart Fleet Pro development and how each issue was identified and fixed. This can be used for interview explanation, daily tracking, project documentation, and RustPad notes.
+
+------------------------------------------------------------
+DAY 1 — BACKEND REPOSITORY ERRORS
+------------------------------------------------------------
+
+Error Faced:
+Maven test failed with errors like:
+
+cannot find symbol method deleteAll()
+cannot find symbol method save()
+cannot find symbol method findAll()
+cannot find symbol method findById()
+
+The errors appeared for repositories such as:
+VehicleRepository
+DriverRepository
+InsuranceRepository
+MaintenanceRecordRepository
+UserRepository
+
+Root Cause:
+Repository interfaces were not properly extending JpaRepository.
+Because of that, Spring Data JPA default methods were unavailable.
+
+Fix Applied:
+Updated all repository interfaces to extend JpaRepository<Entity, Long>.
+
+Example:
+public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
+}
+
+Result:
+Repository-level compile errors were resolved.
+
+Interview Explanation:
+Initially, repository methods like save, findAll, findById, and deleteAll were unavailable because the repository interfaces were not extending JpaRepository properly. After updating all repositories to extend JpaRepository, Spring Data JPA provided those methods automatically.
+
+------------------------------------------------------------
+DAY 2 — DTO GETTER/SETTER ERRORS
+------------------------------------------------------------
+
+Error Faced:
+Backend tests failed with errors like:
+
+cannot find symbol method getVehicleId()
+cannot find symbol method getDriverId()
+cannot find symbol method getMaintenanceId()
+cannot find symbol method getInsuranceId()
+
+Root Cause:
+DTO classes were missing required fields and getter/setter methods expected by tests and service layer.
+
+Fix Applied:
+Created DTO classes manually with required fields and getters/setters:
+
+VehicleDTO
+DriverDTO
+MaintenanceRecordDTO
+InsuranceDTO
+UserDTO
+LoginRequest
+LoginResponse
+
+Result:
+DTO-related compile errors were resolved.
+
+Interview Explanation:
+The tests expected specific DTO getter methods. Since those methods were missing, compilation failed. I created DTO classes with all required fields and manual getters/setters to avoid Lombok-related dependency/configuration issues.
+
+------------------------------------------------------------
+DAY 3 — SERVICE LAYER METHOD ERRORS
+------------------------------------------------------------
+
+Error Faced:
+Tests failed with errors such as:
+
+cannot find symbol method addVehicle()
+cannot find symbol method getAllVehicles()
+cannot find symbol method addDriver()
+cannot find symbol method addRecord()
+
+Root Cause:
+Service classes did not have method names expected by tests.
+
+Expected method names included:
+addVehicle
+getAllVehicles
+getVehicleById
+updateVehicle
+deleteVehicle
+addDriver
+getAllDrivers
+addRecord
+addInsurance
+
+Fix Applied:
+Implemented service classes with exact required method names:
+
+VehicleService
+DriverService
+MaintenanceRecordService
+InsuranceService
+UserService
+
+Result:
+Service method errors were resolved.
+
+Interview Explanation:
+The service method names had to match the test expectations exactly. I aligned the service layer methods with the required method signatures, which resolved the missing method errors.
+
+------------------------------------------------------------
+DAY 4 — CUSTOM EXCEPTION TEST FAILURES
+------------------------------------------------------------
+
+Error Faced:
+Tests expected custom exceptions:
+
+DuplicateResourceException
+ResourceNotFoundException
+
+But services were throwing:
+
+RuntimeException
+
+Example:
+expected: DuplicateResourceException
+but was: RuntimeException
+
+Root Cause:
+Custom exception classes were missing or not used in services.
+
+Fix Applied:
+Created custom exception classes:
+
+DuplicateResourceException
+ResourceNotFoundException
+InvalidDataException
+
+Updated service methods to throw correct exceptions.
+
+Example:
+throw new DuplicateResourceException("Vehicle number already exists");
+
+throw new ResourceNotFoundException("Vehicle not found with id: " + id);
+
+Result:
+Backend service tests passed.
+
+Interview Explanation:
+Tests were validating specific exception types. I replaced generic RuntimeException with meaningful custom exceptions such as DuplicateResourceException and ResourceNotFoundException, improving both test compatibility and API error handling clarity.
+
+------------------------------------------------------------
+DAY 5 — USER ROLE TYPE ISSUE
+------------------------------------------------------------
+
+Error Faced:
+UserService initially treated role as String, but User entity used enum Role.
+
+Wrong operations included:
+role.trim()
+role.startsWith()
+user.setRole("ADMIN")
+
+Root Cause:
+Role was an enum, not a String.
+
+Fix Applied:
+Updated role handling:
+
+Role role = user.getRole();
+
+if (role == null) {
+    role = Role.ADMIN;
+}
+
+String roleName = role.name();
+
+Used:
+user.setRole(Role.ADMIN);
+
+Instead of:
+user.setRole("ADMIN");
+
+Result:
+User authentication and Spring Security authority generation worked.
+
+Interview Explanation:
+The role field was mapped as an enum using @Enumerated(EnumType.STRING). I updated the service to use enum-safe logic and converted the role to string only when creating Spring Security authorities.
+
+------------------------------------------------------------
+DAY 6 — SECURITY AND JWT SETUP
+------------------------------------------------------------
+
+Error Faced:
+AuthController required JWT/security support, but setup was incomplete.
+
+Missing/incomplete parts included:
+JwtUtil
+JwtRequestFilter
+SecurityConfig
+AuthenticationManager
+PasswordEncoder bean
+
+Root Cause:
+JWT authentication infrastructure had not been fully configured.
+
+Fix Applied:
+Created/updated:
+
+JwtUtil
+JwtRequestFilter
+SecurityConfig
+Configurations
+
+Configured public endpoints:
+POST /api/auth/register
+POST /api/auth/login
+
+Configured protected APIs:
+Any /api/** request requires authentication except public auth APIs.
+
+Result:
+JWT-based authentication flow was enabled.
+
+Interview Explanation:
+To support secure login, I configured Spring Security with JWT. Public authentication routes were permitted, protected APIs were restricted, and JWT filters were added before username-password authentication.
+
+------------------------------------------------------------
+DAY 7 — ANGULAR HTTPSERVICE MISSING METHODS
+------------------------------------------------------------
+
+Error Faced:
+Angular tests failed with errors like:
+
+Property 'getAllVehicles' does not exist on type 'HttpService'
+Property 'addDriver' does not exist on type 'HttpService'
+Property 'getToken' does not exist on type 'AuthService'
+
+Root Cause:
+Frontend HttpService and AuthService were incomplete.
+
+Fix Applied:
+Implemented Angular methods for:
+
+Vehicle APIs
+Driver APIs
+Maintenance APIs
+Insurance APIs
+
+Added AuthService token methods:
+
+getToken()
+setToken()
+logout()
+isLoggedIn()
+
+Result:
+Angular service compile errors were reduced/resolved.
+
+Interview Explanation:
+The Angular tests expected specific service methods. I implemented the required HTTP methods and token management methods so the frontend could call backend APIs consistently.
+
+------------------------------------------------------------
+DAY 8 — ANGULAR URL MISMATCH ERRORS
+------------------------------------------------------------
+
+Error Faced:
+Angular tests expected URLs such as:
+
+/api/insurance/filter/coverage?coverageType=Full
+/api/insurance/sort/premium?order=asc
+/api/maintenance/filter/date?date=2026-01-01
+/api/maintenance/sort/cost?order=asc
+/api/drivers/filter/availability?status=Assigned
+
+But service was calling:
+
+/api/insurance/filter?coverageType=Full
+/api/insurance/sort?order=asc
+/api/maintenance/filter?date=2026-01-01
+/api/maintenance/sort?order=asc
+/api/drivers/filter/availability?availabilityStatus=Assigned
+
+Root Cause:
+Frontend service endpoint paths did not match test expectations.
+
+Fix Applied:
+Updated HttpService URLs exactly as required.
+
+Example:
+Changed:
+/api/drivers/filter/availability?availabilityStatus=
+
+To:
+/api/drivers/filter/availability?status=
+
+Result:
+Angular service tests passed.
+
+Interview Explanation:
+The backend API call URLs needed to exactly match expected routes. I corrected query parameter names and endpoint paths in HttpService.
+
+------------------------------------------------------------
+DAY 9 — GIT BRANCH PUSH ERROR
+------------------------------------------------------------
+
+Error Faced:
+Git push failed with:
+
+error: src refspec main does not match any
+
+Root Cause:
+Local branch was named master, but push command used main.
+
+Fix Applied:
+Renamed local branch:
+
+git branch -M main
+
+Then pushed:
+
+git push -u origin main
+
+Result:
+Git branch mismatch was resolved.
+
+Interview Explanation:
+The error happened because the local branch was master while the push command targeted main. Renaming the branch fixed the refspec issue.
+
+------------------------------------------------------------
+DAY 10 — MYSQL DATABASE SETUP
+------------------------------------------------------------
+
+Error Faced:
+Initially:
+
+SHOW TABLES;
+
+returned:
+
+Empty set
+
+Root Cause:
+Database existed, but Spring Boot had not yet generated tables through Hibernate.
+
+Fix Applied:
+Used correct database:
+
+USE smartfleet_db;
+
+Started backend successfully.
+
+Hibernate created tables:
+
+driver
+insurance
+maintenance_record
+users
+vehicle
+
+Result:
+Database connection and table generation were verified.
+
+Interview Explanation:
+Hibernate creates tables only when the backend starts successfully and connects to the configured database. After starting the backend and using the correct database, all entity tables were generated.
+
+------------------------------------------------------------
+DAY 11 — REGISTRATION FAILED WITH GENERIC ERROR
+------------------------------------------------------------
+
+Error Faced:
+Frontend showed:
+
+Registration failed. Username/email/contact may already exist.
+
+Root Cause:
+Frontend displayed a generic message for all registration failures. MySQL showed the users table was empty, so duplicate data was not the issue.
+
+Diagnosis:
+Browser Network tab showed:
+
+POST /api/auth/register → 403 Forbidden
+
+Response preview showed:
+
+Invalid CORS request
+
+Fix Applied:
+Updated Spring Security to allow auth APIs and OPTIONS requests:
+
+.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+.antMatchers("/api/auth/**").permitAll()
+
+Updated global CORS config:
+
+.allowedOriginPatterns("*")
+.allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+.allowedHeaders("*")
+.exposedHeaders("*")
+.allowCredentials(false)
+
+Result:
+Registration started working successfully.
+
+Interview Explanation:
+The registration failure was caused by CORS and Spring Security, not duplicate data. The frontend and backend were running on different proxy ports, so the browser treated them as different origins. I fixed this by allowing CORS globally and permitting auth endpoints in Spring Security.
+
+------------------------------------------------------------
+DAY 12 — CONTACT NUMBER FORMAT ISSUE
+------------------------------------------------------------
+
+Error Faced:
+Registration was attempted with:
+
++917385316325
+
+Root Cause:
+Backend stores contact number as:
+
+Long contactNumber
+
+A Long cannot contain a plus sign.
+
+Fix Applied:
+Used numeric-only contact number:
+
+7385316325
+
+Result:
+Contact number was accepted by backend.
+
+Interview Explanation:
+Since the backend uses Long for contact number, the frontend must send only digits and not symbols like +.
+
+------------------------------------------------------------
+DAY 13 — LOGIN FAILED WITH JWT ERROR
+------------------------------------------------------------
+
+Error Faced:
+Login API returned:
+
+{
+  "message": "Illegal base64 character: '_'",
+  "status": 500
+}
+
+Root Cause:
+JWT secret key contained an underscore:
+
+smartfleetpro_secret_key_2026
+
+With JJWT 0.11.2, the signing logic caused a Base64-related error.
+
+Fix Applied:
+Updated JwtUtil.java to use a proper HMAC signing key:
+
+private final String SECRET_KEY = "smartfleetprosecretkey2026securejwtkey";
+
+private Key getSigningKey() {
+    return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+}
+
+Updated JWT signing:
+
+.signWith(getSigningKey(), SignatureAlgorithm.HS256)
+
+Result:
+Login started working and JWT token was generated successfully.
+
+Interview Explanation:
+The JWT secret format caused a signing error. I fixed it by generating a proper HMAC signing key using Keys.hmacShaKeyFor() and a secure string converted to UTF-8 bytes.
+
+------------------------------------------------------------
+DAY 14 — DASHBOARD ROUTE ACCESS
+------------------------------------------------------------
+
+Error Faced:
+Dashboard did not open before login.
+
+Root Cause:
+Dashboard route was protected by AuthGuard.
+
+Fix Applied:
+After successful login, frontend stored:
+
+token
+role
+username
+userId
+
+AuthGuard checked:
+
+this.authService.isLoggedIn()
+
+If token existed, access was allowed.
+
+Result:
+Login redirected successfully to dashboard.
+
+Interview Explanation:
+The dashboard was correctly protected. Once login stored the JWT token in localStorage, AuthGuard allowed the user to access the dashboard.
+
+------------------------------------------------------------
+DAY 15 — JWT.IO VERIFICATION
+------------------------------------------------------------
+
+Issue Faced:
+JWT token was pasted into jwt.io with quotes:
+
+'eyJhbGciOiJIUzI1NiJ9...'
+
+jwt.io did not decode properly.
+
+Fix Applied:
+Copied only the raw token from browser localStorage:
+
+localStorage.getItem('token')
+
+or:
+
+copy(localStorage.getItem('token'))
+
+Pasted raw token without quotes.
+
+Used secret:
+
+smartfleetprosecretkey2026securejwtkey
+
+Kept Base64 secret toggle OFF.
+
+Result:
+jwt.io showed:
+
+Valid JWT
+Signature Verified
+Valid secret
+
+Decoded payload showed:
+
+{
+  "sub": "nikhil3112",
+  "iat": 1778823372,
+  "exp": 1778859372
+}
+
+Interview Explanation:
+After successful login, I copied the JWT from localStorage and verified it on jwt.io using the backend signing secret. This confirmed that the token was valid, signed using HS256, and contained the expected username subject and expiry claims.
+
+------------------------------------------------------------
+CURRENT FINAL WORKING FLOW
+------------------------------------------------------------
+
+User opens Register page
+↓
+User enters username, email, contact number, role, password
+↓
+Angular calls POST /api/auth/register
+↓
+Spring Security allows /api/auth/**
+↓
+CORS allows frontend-backend request
+↓
+Backend encodes password
+↓
+User is saved in MySQL
+↓
+User opens Login page
+↓
+Angular calls POST /api/auth/login
+↓
+Backend authenticates user
+↓
+Backend generates JWT
+↓
+Frontend stores token in localStorage
+↓
+AuthGuard allows dashboard
+↓
+JWT verified successfully on jwt.io
+
+------------------------------------------------------------
+CURRENT FINAL STATUS
+------------------------------------------------------------
+
+Backend repositories fixed                         DONE
+DTO classes fixed                                  DONE
+Service layer fixed                                DONE
+Custom exceptions fixed                            DONE
+Controllers working                                DONE
+Security configuration working                     DONE
+CORS fixed                                         DONE
+MySQL connected                                    DONE
+Tables generated                                   DONE
+Registration working                               DONE
+User data stored in MySQL                          DONE
+Password encrypted                                 DONE
+Login working                                      DONE
+JWT token generated                                DONE
+Token stored in localStorage                       DONE
+Dashboard protected and accessible                 DONE
+JWT verified on jwt.io                             DONE
+
+------------------------------------------------------------
+INTERVIEW SUMMARY
+------------------------------------------------------------
+
+During integration, multiple issues occurred across backend, 
+frontend, database, security, and JWT. I debugged them step-by-step using Maven logs, 
+MySQL queries, browser Network tab, backend logs, and jwt.io. 
+The major problems were repository inheritance issues, missing DTO/service methods, incorrect exception types, CORS blocking registration, Spring Security permissions, 
+and JWT signing failure due to an invalid secret format. After fixing these issues, 
+the complete registration-login-dashboard flow worked successfully with MySQL storage and 
+verified JWT authentication.
+
+TILL NOW ___________________ ---->
+
+
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
