@@ -19,6 +19,7 @@
           name="username"
           [(ngModel)]="username"
           placeholder="Enter username"
+          [disabled]="isLoginLocked"
         />
       </div>
 
@@ -29,14 +30,65 @@
           name="password"
           [(ngModel)]="password"
           placeholder="Enter password"
+          [disabled]="isLoginLocked"
         />
       </div>
 
-      <button type="submit" class="primary-btn" [disabled]="loading">
-        {{ loading ? 'Logging in...' : 'Login' }}
+      <div class="captcha-box">
+        <label>Captcha</label>
+
+        <div class="captcha-question">
+          <span *ngIf="!captchaLoading && captchaQuestion">
+            {{ captchaQuestion }}
+          </span>
+
+          <span *ngIf="captchaLoading">
+            Loading captcha...
+          </span>
+
+          <span *ngIf="!captchaLoading && !captchaQuestion">
+            Captcha not loaded
+          </span>
+
+          <button
+            type="button"
+            class="refresh-btn"
+            (click)="loadCaptcha()"
+            [disabled]="captchaLoading || isLoginLocked"
+          >
+            Refresh
+          </button>
+        </div>
+
+        <input
+          type="text"
+          name="captchaAnswer"
+          [(ngModel)]="captchaAnswer"
+          placeholder="Enter captcha answer"
+          [disabled]="isLoginLocked"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="primary-btn"
+        [disabled]="loading || captchaLoading || isLoginLocked"
+      >
+        <span *ngIf="!isLoginLocked">
+          {{ loading ? 'Logging in...' : 'Login' }}
+        </span>
+
+        <span *ngIf="isLoginLocked">
+          Locked {{ lockCountdown }}
+        </span>
       </button>
 
-      <button type="button" class="secondary-btn" (click)="resetForm()">
+      <button
+        type="button"
+        class="secondary-btn"
+        (click)="resetForm()"
+        [disabled]="isLoginLocked"
+      >
         Reset
       </button>
     </form>
@@ -44,6 +96,10 @@
     <p class="bottom-text">
       New user?
       <a routerLink="/register">Register</a>
+    </p>
+
+    <p class="bottom-text">
+      <a routerLink="/forgot-password">Forgot Password?</a>
     </p>
   </div>
 </div>

@@ -1,16 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+
 import { environment } from '../../environments/environment';
 import { User } from '../model/user';
 import { LoginRequest } from '../model/loginrequest';
 import { LoginResponse } from '../model/login-response';
+import { CaptchaResponse } from '../model/captcha-response';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   public serverName = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
+
+  getCaptcha(): Observable<CaptchaResponse> {
+    return this.http.get<CaptchaResponse>(
+      `${this.serverName}/api/auth/captcha`
+    );
+  }
 
   login(loginRequest: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(

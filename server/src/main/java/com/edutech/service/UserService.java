@@ -1,5 +1,6 @@
 package com.edutech.service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,6 +20,9 @@ import com.edutech.repository.UserRepository;
 
 @Service
 public class UserService implements UserDetailsService {
+
+    private static final int MAX_FAILED_ATTEMPTS = 3;
+    private static final int LOCK_TIME_MINUTES = 5;
 
     @Autowired
     private UserRepository userRepository;
@@ -83,6 +87,9 @@ public class UserService implements UserDetailsService {
             user.setRole(Role.ADMIN);
         }
 
+        user.setFailedLoginAttempts(0);
+        user.setAccountLockedUntil(null);
+
         return userRepository.save(user);
     }
 
@@ -114,6 +121,71 @@ public class UserService implements UserDetailsService {
      */
     public User getLoggedInUser(String username) {
         return getUserByUsername(username);
+    }
+
+    /*
+     * Checks if account is currently locked.
+     * If lock time expired, unlocks automatically.
+     */
+    public boolean isAccountLocked(User user) {
+
+        if (user.getAccountLockedUntil() == null) {
+            return false;
+        }
+
+        if (user.getAccountLockedUntil().isAfter(LocalDateTime.now())) {
+            return true;
+        }
+
+        user.setAccountLockedUntil(null);
+        user.setFailedLoginAttempts(0);
+        userRepository.save(user);
+
+        return false;
+    }
+
+    /*
+     * Records failed login attempt.
+     * Returns attempts left.
+     * If attempts reach 3, locks account for 5 minutes and returns 0.
+     */
+    public int recordFailedLoginAttempt(String username) {
+
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        if (user == null) {
+            return MAX_FAILED_ATTEMPTS;
+        }
+
+        Integer attempts = user.getFailedLoginAttempts();
+
+        if (attempts == null) {
+            attempts = 0;
+        }
+
+        attempts++;
+
+        user.setFailedLoginAttempts(attempts);
+
+        if (attempts >= MAX_FAILED_ATTEMPTS) {
+            user.setAccountLockedUntil(LocalDateTime.now().plusMinutes(LOCK_TIME_MINUTES));
+            userRepository.save(user);
+            return 0;
+        }
+
+        userRepository.save(user);
+
+        return MAX_FAILED_ATTEMPTS - attempts;
+    }
+
+    /*
+     * Resets failed attempts after successful login.
+     */
+    public void resetFailedLoginAttempts(User user) {
+
+        user.setFailedLoginAttempts(0);
+        user.setAccountLockedUntil(null);
+        userRepository.save(user);
     }
 
     public boolean existsByUsername(String username) {

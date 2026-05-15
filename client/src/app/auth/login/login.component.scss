@@ -25,19 +25,22 @@
   color: #64748b;
 }
 
-.form-group {
+.form-group,
+.captcha-box {
   text-align: left;
   margin-bottom: 15px;
 }
 
-.form-group label {
+.form-group label,
+.captcha-box label {
   display: block;
   margin-bottom: 6px;
   font-weight: 600;
   color: #334155;
 }
 
-.form-group input {
+.form-group input,
+.captcha-box input {
   width: 100%;
   padding: 11px;
   border: 1px solid #cbd5e1;
@@ -46,8 +49,37 @@
   background: #ffffff;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.captcha-box input:focus {
   border-color: #2563eb;
+}
+
+.captcha-question {
+  background: #f1f5f9;
+  color: #1e293b;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.refresh-btn {
+  border: none;
+  background: #64748b;
+  color: white;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.refresh-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
 }
 
 .primary-btn,
@@ -82,6 +114,7 @@
   padding: 10px;
   border-radius: 8px;
   margin: 15px 0;
+  font-weight: 700;
 }
 
 .success-box {
@@ -90,10 +123,21 @@
   padding: 10px;
   border-radius: 8px;
   margin: 15px 0;
+  font-weight: 700;
+}
+
+.bottom-text {
+  margin-bottom: 0;
 }
 
 .bottom-text a {
   color: #2563eb;
   font-weight: 700;
   text-decoration: none;
+}
+
+input:disabled,
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }

@@ -1,5 +1,7 @@
 package com.edutech.entity;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -35,6 +37,12 @@ public class User {
     @Column(name = "role")
     private Role role;
 
+    @Column(name = "failed_login_attempts")
+    private Integer failedLoginAttempts;
+
+    @Column(name = "account_locked_until")
+    private LocalDateTime accountLockedUntil;
+
     public User() {
     }
 
@@ -46,13 +54,30 @@ public class User {
         this.email = email;
         this.contactNumber = contactNumber;
         this.role = role;
+        this.failedLoginAttempts = 0;
+        this.accountLockedUntil = null;
+    }
+
+    @PrePersist
+    public void onCreate() {
+        if (this.failedLoginAttempts == null) {
+            this.failedLoginAttempts = 0;
+        }
     }
 
     public Long getId() {
         return id;
     }
 
+    public Long getUserId() {
+        return id;
+    }
+
     public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUserId(Long id) {
         this.id = id;
     }
 
@@ -94,5 +119,21 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Integer getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(Integer failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public LocalDateTime getAccountLockedUntil() {
+        return accountLockedUntil;
+    }
+
+    public void setAccountLockedUntil(LocalDateTime accountLockedUntil) {
+        this.accountLockedUntil = accountLockedUntil;
     }
 }

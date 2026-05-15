@@ -7,20 +7,12 @@ export class AuthService {
     localStorage.setItem('token', token);
   }
 
-  saveToken(token: string): void {
-    this.setToken(token);
-  }
-
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
   setRole(role: string): void {
     localStorage.setItem('role', role);
-  }
-
-  saveRole(role: string): void {
-    this.setRole(role);
   }
 
   getRole(): string | null {

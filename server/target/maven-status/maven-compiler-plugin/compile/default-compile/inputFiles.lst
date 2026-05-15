@@ -3,8 +3,10 @@
 /home/coder/app/server/src/main/java/com/edutech/controller/InsuranceController.java
 /home/coder/app/server/src/main/java/com/edutech/dto/LoginResponse.java
 /home/coder/app/server/src/main/java/com/edutech/entity/User.java
+/home/coder/app/server/src/main/java/com/edutech/service/CaptchaService.java
 /home/coder/app/server/src/main/java/com/edutech/repository/InsuranceRepository.java
 /home/coder/app/server/src/main/java/com/edutech/entity/Vehicle.java
+/home/coder/app/server/src/main/java/com/edutech/dto/CaptchaResponse.java
 /home/coder/app/server/src/main/java/com/edutech/service/DriverService.java
 /home/coder/app/server/src/main/java/com/edutech/dto/LoginRequest.java
 /home/coder/app/server/src/main/java/com/edutech/util/JwtUtil.java
